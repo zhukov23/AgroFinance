@@ -1,46 +1,162 @@
-# Getting Started with Create React App
+# README: Быстрое добавление страницы с таблицей данных
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Самый простой способ (с помощью чата)
 
-## Available Scripts
+### Шаг 1: Подготовьте файлы-образцы
+Отдайте чату эти 4 файла в качестве образца:
+- `src\pages\References\Banks\BanksList.tsx`
+- `src\pages\References\Banks\config\index.ts`
+- `src\pages\References\Banks\config\syncConfig.ts`
+- `src\pages\References\Banks\config\tableConfig.ts`
 
-In the project directory, you can run:
+### Шаг 2: Получите структуру таблицы
+Выполните SQL-скрипт на сервере (замените `reference_counterparties` на нужную таблицу):
 
-### `npm start`
+```sql
+WITH table_columns AS (
+    SELECT 
+        c.column_name,
+        c.data_type,
+        CASE 
+            WHEN c.character_maximum_length IS NOT NULL 
+            THEN c.data_type || '(' || c.character_maximum_length || ')'
+            ELSE c.data_type 
+        END as full_type,
+        c.is_nullable,
+        c.column_default,
+        c.ordinal_position
+    FROM information_schema.columns c
+    WHERE c.table_name = 'reference_counterparties'
+      AND c.table_schema = 'public'
+),
+foreign_keys AS (
+    SELECT 
+        kcu.column_name,
+        ccu.table_name as reference_table,
+        ccu.column_name as reference_column
+    FROM information_schema.table_constraints tc
+    JOIN information_schema.key_column_usage kcu 
+        ON tc.constraint_name = kcu.constraint_name
+    JOIN information_schema.constraint_column_usage ccu 
+        ON ccu.constraint_name = tc.constraint_name
+    WHERE tc.table_name = 'reference_counterparties'
+      AND tc.constraint_type = 'FOREIGN KEY'
+)
+SELECT 
+    tc.column_name as "field_name",
+    tc.full_type as "field_type", 
+    tc.is_nullable as "nullable",
+    tc.column_default as "default_value",
+    fk.reference_table as "reference_table",
+    fk.reference_column as "reference_column",
+    CASE 
+        WHEN fk.reference_table IS NOT NULL THEN 'FK'
+        WHEN tc.column_name = 'id' THEN 'PK'
+        ELSE 'FIELD'
+    END as "field_category"
+FROM table_columns tc
+LEFT JOIN foreign_keys fk ON tc.column_name = fk.column_name
+ORDER BY tc.ordinal_position;
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Шаг 3: Дайте задание чату
+```
+Измени эти 4 файла чтобы получить src\pages\References\Counterparties\CounterpartiesList.tsx на основании src\pages\References\Banks\BanksList.tsx используя структуру таблицы:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+"field_name"	"field_type"	"nullable"	"default_value"	"reference_table"	"reference_column"	"field_category"
+"id"	"integer"	"NO"	"nextval('counterparties_id_seq'::regclass)"			"PK"
+"full_name"	"character varying(500)"	"NO"				"FIELD"
+...
+```
 
-### `npm test`
+**ВСЕ!** Чат создаст все необходимые файлы.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Ручной способ
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Создайте структуру папок
+```
+src\pages\References\НоваяСущность\
+├── НоваяСущностьList.tsx
+└── config\
+    ├── index.ts
+    ├── syncConfig.ts
+    └── tableConfig.ts
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 2. Скопируйте базовые файлы
+Скопируйте из `src\pages\References\Banks\` в новую папку:
+- `BanksList.tsx` → `НоваяСущностьList.tsx`
+- `config\` (всю папку)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3. Настройте syncConfig.ts
 
-### `npm run eject`
+#### 3.1 Укажите нужные таблицы
+```typescript
+export const banksSyncConfig: SyncConfig = {
+  tables: [
+    'таблица1',
+    'таблица2'  // Замените на реальные имена таблиц
+  ],
+  displayName: 'Новое название',
+  description: 'Новое описание',
+  // ...
+};
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+#### 3.2 Переименуйте переменную
+```typescript
+// Было: banksSyncConfig
+// Стало: новаяСущностьSyncConfig
+export const новаяСущностьSyncConfig: SyncConfig = {
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 4. Получите структуру таблицы
+Выполните SQL-скрипт из шага 2 (измените имя таблицы).
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 5. Настройте tableConfig.ts
+Дайте чату файл `tableConfig.ts` и структуру таблицы:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```
+Сделай tableConfig.ts на основании структуры таблицы из БД:
 
-## Learn More
+"field_name"	"field_type"	"nullable"	"default_value"	"reference_table"	"reference_column"	"field_category"
+"id"	"integer"	"NO"	"nextval('counterparties_id_seq'::regclass)"			"PK"
+"full_name"	"character varying(500)"	"NO"				"FIELD"
+...
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### 6. Обновите index.ts
+Замените имена переменных на созданные в шагах 3.2 и 5:
+```typescript
+export { 
+  новаяСущностьSyncConfig,  // Из шага 3.2
+  // ...
+} from './syncConfig';
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+export {
+  новаяСущностьColumns,     // Из шага 5
+  // ...
+} from './tableConfig';
+```
+
+### 7. Создайте основную страницу
+Дайте чату:
+```
+Создай НоваяСущностьList.tsx на основании BanksList.tsx
+```
+
+---
+
+## Результат
+
+После выполнения любого из способов у вас будет готовая страница с:
+- ✅ Таблицей данных
+- ✅ Синхронизацией с сервером
+- ✅ Поиском и фильтрацией
+- ✅ Пагинацией
+- ✅ Обработкой ошибок
+- ✅ Кнопками обновления и синхронизации
+
+Просто добавьте роутинг в приложение, и страница готова к использованию!

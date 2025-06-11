@@ -1,0 +1,22 @@
+// Импорт стилей Velzon
+@import './assets/scss/themes.scss';
+
+// Дополнительные стили для агро-тематики
+.text-agro {
+  color: #4CAF50 !important;
+}
+
+.bg-agro {
+  background-color: #4CAF50 !important;
+}
+
+.btn-agro {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  color: white;
+}
+
+.btn-agro:hover {
+  background-color: #45a049;
+  border-color: #45a049;
+}

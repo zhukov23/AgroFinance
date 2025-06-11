@@ -1,25 +1,22 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+
+//import Scss
+import './assets/scss/themes.scss';
+
+//imoprt Route
+import Route from './Routes';
+
+// Fake Backend 
+import fakeBackend from "./helpers/AuthType/fakeBackend";
+// Activating fake backend
+fakeBackend();
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <React.Fragment>
+      <Route />
+    </React.Fragment>
   );
 }
 

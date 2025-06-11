@@ -1,0 +1,409 @@
+{
+  "success": true,
+  "data": {
+    "items": [
+      {
+        "id": 1,
+        "organization_id": 1,
+        "full_name": "ООО \"Семена-Плюс\"",
+        "short_name": "Семена-Плюс",
+        "inn": "7701234568",
+        "kpp": "770101001",
+        "ogrn": "1127746123456",
+        "counterparty_type": ["supplier"],
+        "contact_person": "Иванов Петр Сергеевич",
+        "phone": "+7 (495) 123-45-67",
+        "email": "info@semena-plus.ru",
+        "address": "г. Москва, ул. Садовая, д. 10, офис 201",
+        "bank_accounts": [
+          {
+            "id": 1,
+            "bank_id": 1,
+            "account_number": "40702810400000123456",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 1,
+              "name": "ПАО Сбербанк",
+              "bik": "044525225",
+              "correspondent_account": "30101810400000000225"
+            }
+          },
+          {
+            "id": 2,
+            "bank_id": 3,
+            "account_number": "40702810600000123457",
+            "currency": "USD",
+            "is_primary": false,
+            "is_active": true,
+            "bank": {
+              "id": 3,
+              "name": "АО \"Альфа-Банк\"",
+              "bik": "044525593",
+              "correspondent_account": "30101810200000000593"
+            }
+          }
+        ],
+        "payment_terms": "Предоплата 50%, остаток в течение 14 дней",
+        "credit_limit": 500000.00,
+        "rating": "good",
+        "notes": "Основной поставщик семян озимых культур",
+        "is_active": true,
+        "created_at": "2025-01-15T09:30:00.000Z",
+        "updated_at": "2025-05-20T14:22:00.000Z"
+      },
+      {
+        "id": 2,
+        "organization_id": 1,
+        "full_name": "АО \"Агро-Химия\"",
+        "short_name": "Агро-Химия",
+        "inn": "7702345679",
+        "kpp": "770201001",
+        "ogrn": "1027746234567",
+        "counterparty_type": ["supplier"],
+        "contact_person": "Петрова Анна Владимировна",
+        "phone": "+7 (495) 234-56-78",
+        "email": "sales@agrohim.ru",
+        "address": "г. Москва, Ленинградский пр-т, д. 25, стр. 3",
+        "bank_accounts": [
+          {
+            "id": 3,
+            "bank_id": 2,
+            "account_number": "40702810500000234567",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 2,
+              "name": "Банк ВТБ (ПАО)",
+              "bik": "044525187",
+              "correspondent_account": "30101810700000000187"
+            }
+          }
+        ],
+        "payment_terms": "Отсрочка платежа 30 дней",
+        "credit_limit": 1200000.00,
+        "rating": "excellent",
+        "notes": "Поставщик минеральных удобрений и СЗР",
+        "is_active": true,
+        "created_at": "2025-02-03T11:45:00.000Z",
+        "updated_at": "2025-05-25T16:30:00.000Z"
+      },
+      {
+        "id": 3,
+        "organization_id": 1,
+        "full_name": "ООО \"Зерно-Трейд\"",
+        "short_name": "Зерно-Трейд",
+        "inn": "7703456780",
+        "kpp": "770301001",
+        "ogrn": "1137746345678",
+        "counterparty_type": ["customer"],
+        "contact_person": "Сидоров Михаил Петрович",
+        "phone": "+7 (495) 345-67-89",
+        "email": "purchase@zerno-trade.ru",
+        "address": "г. Москва, ул. Складочная, д. 15",
+        "bank_accounts": [
+          {
+            "id": 4,
+            "bank_id": 3,
+            "account_number": "40702810600000345678",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 3,
+              "name": "АО \"Альфа-Банк\"",
+              "bik": "044525593",
+              "correspondent_account": "30101810200000000593"
+            }
+          },
+          {
+            "id": 5,
+            "bank_id": 4,
+            "account_number": "40702810900000345679",
+            "currency": "RUB",
+            "is_primary": false,
+            "is_active": true,
+            "bank": {
+              "id": 4,
+              "name": "АО \"РОССЕЛЬХОЗБАНК\"",
+              "bik": "044525256",
+              "correspondent_account": "30101810200000000256"
+            }
+          }
+        ],
+        "payment_terms": "Оплата по факту поставки",
+        "credit_limit": 0.00,
+        "rating": "average",
+        "notes": "Покупатель зерна пшеницы и ячменя",
+        "is_active": true,
+        "created_at": "2025-02-10T08:15:00.000Z",
+        "updated_at": "2025-05-15T10:45:00.000Z"
+      },
+      {
+        "id": 4,
+        "organization_id": 1,
+        "full_name": "ИП Кузнецов Александр Викторович",
+        "short_name": "ИП Кузнецов А.В.",
+        "inn": "770123456789",
+        "kpp": null,
+        "ogrn": "304770234567890",
+        "counterparty_type": ["contractor"],
+        "contact_person": "Кузнецов Александр Викторович",
+        "phone": "+7 (915) 456-78-90",
+        "email": "kuznetsov.av@gmail.com",
+        "address": "г. Москва, ул. Рабочая, д. 7, кв. 45",
+        "bank_accounts": [
+          {
+            "id": 6,
+            "bank_id": 5,
+            "account_number": "40802810700000456789",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 5,
+              "name": "АО \"Тинькофф Банк\"",
+              "bik": "044525974",
+              "correspondent_account": "30101810145250000974"
+            }
+          }
+        ],
+        "payment_terms": "Еженедельная оплата",
+        "credit_limit": 150000.00,
+        "rating": "good",
+        "notes": "Услуги по обработке полей, опрыскивание",
+        "is_active": true,
+        "created_at": "2025-03-05T13:20:00.000Z",
+        "updated_at": "2025-05-22T09:10:00.000Z"
+      },
+      {
+        "id": 5,
+        "organization_id": 1,
+        "full_name": "ПАО Сбербанк",
+        "short_name": "Сбербанк",
+        "inn": "7707083893",
+        "kpp": "773601001",
+        "ogrn": "1027739020025",
+        "counterparty_type": ["bank"],
+        "contact_person": "Романова Елена Сергеевна",
+        "phone": "+7 (495) 500-55-50",
+        "email": "corporate@sberbank.ru",
+        "address": "г. Москва, ул. Вавилова, д. 19",
+        "bank_accounts": [
+          {
+            "id": 7,
+            "bank_id": 1,
+            "account_number": "40702810400000000001",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 1,
+              "name": "ПАО Сбербанк",
+              "bik": "044525225",
+              "correspondent_account": "30101810400000000225"
+            }
+          }
+        ],
+        "payment_terms": "Согласно тарифам банка",
+        "credit_limit": 0.00,
+        "rating": "excellent",
+        "notes": "Основной банк для расчетно-кассового обслуживания",
+        "is_active": true,
+        "created_at": "2025-01-20T12:00:00.000Z",
+        "updated_at": "2025-04-30T15:30:00.000Z"
+      },
+      {
+        "id": 6,
+        "organization_id": 1,
+        "full_name": "Управление Россельхознадзора по Московской области",
+        "short_name": "Россельхознадзор МО",
+        "inn": "7701234567",
+        "kpp": "770143001",
+        "ogrn": "1037739999999",
+        "counterparty_type": ["government"],
+        "contact_person": "Федоров Сергей Николаевич",
+        "phone": "+7 (495) 607-44-44",
+        "email": "info@fsvps.ru",
+        "address": "г. Москва, Орликов пер., д. 1/11",
+        "bank_accounts": [],
+        "payment_terms": "Согласно регламенту",
+        "credit_limit": 0.00,
+        "rating": null,
+        "notes": "Государственный контроль в области сельского хозяйства",
+        "is_active": true,
+        "created_at": "2025-01-25T14:30:00.000Z",
+        "updated_at": "2025-03-15T11:20:00.000Z"
+      },
+      {
+        "id": 7,
+        "organization_id": 1,
+        "full_name": "ООО \"Агро-Техника-Сервис\"",
+        "short_name": "АТС",
+        "inn": "7704567891",
+        "kpp": "770401001",
+        "ogrn": "1147746456789",
+        "counterparty_type": ["supplier", "contractor"],
+        "contact_person": "Волков Дмитрий Андреевич",
+        "phone": "+7 (495) 567-89-01",
+        "email": "service@ats-agro.ru",
+        "address": "г. Москва, Рязанский пр-т, д. 86, к. 2",
+        "bank_accounts": [
+          {
+            "id": 8,
+            "bank_id": 6,
+            "account_number": "40702810800000567890",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 6,
+              "name": "Газпромбанк (Акционерное общество)",
+              "bik": "044525823",
+              "correspondent_account": "30101810200000000823"
+            }
+          },
+          {
+            "id": 9,
+            "bank_id": 2,
+            "account_number": "40702810500000567891",
+            "currency": "EUR",
+            "is_primary": false,
+            "is_active": true,
+            "bank": {
+              "id": 2,
+              "name": "Банк ВТБ (ПАО)",
+              "bik": "044525187",
+              "correspondent_account": "30101810700000000187"
+            }
+          }
+        ],
+        "payment_terms": "Предоплата за запчасти, постоплата за работы",
+        "credit_limit": 800000.00,
+        "rating": "good",
+        "notes": "Поставка с/х техники, запчастей, ремонтные работы",
+        "is_active": true,
+        "created_at": "2025-03-12T10:45:00.000Z",
+        "updated_at": "2025-05-27T08:15:00.000Z"
+      },
+      {
+        "id": 8,
+        "organization_id": 1,
+        "full_name": "АО \"Московский Элеватор\"",
+        "short_name": "МосЭлеватор",
+        "inn": "7705678902",
+        "kpp": "770501001",
+        "ogrn": "1027746567890",
+        "counterparty_type": ["customer", "contractor"],
+        "contact_person": "Орлова Татьяна Михайловна",
+        "phone": "+7 (495) 678-90-12",
+        "email": "contracts@moselevator.ru",
+        "address": "г. Москва, ш. Энтузиастов, д. 56",
+        "bank_accounts": [
+          {
+            "id": 10,
+            "bank_id": 4,
+            "account_number": "40702810900000678901",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 4,
+              "name": "АО \"РОССЕЛЬХОЗБАНК\"",
+              "bik": "044525256",
+              "correspondent_account": "30101810200000000256"
+            }
+          }
+        ],
+        "payment_terms": "Оплата в течение 10 дней после приемки",
+        "credit_limit": 2000000.00,
+        "rating": "excellent",
+        "notes": "Покупка и хранение зерна, услуги сушки и очистки",
+        "is_active": true,
+        "created_at": "2025-04-01T09:30:00.000Z",
+        "updated_at": "2025-05-26T14:50:00.000Z"
+      },
+      {
+        "id": 9,
+        "organization_id": 1,
+        "full_name": "ООО \"Логистик-Агро\"",
+        "short_name": "Логистик-Агро",
+        "inn": "7706789013",
+        "kpp": "770601001",
+        "ogrn": "1157746678901",
+        "counterparty_type": ["contractor"],
+        "contact_person": "Новиков Игорь Владимирович",
+        "phone": "+7 (495) 789-01-23",
+        "email": "dispatch@logistic-agro.ru",
+        "address": "г. Москва, Варшавское ш., д. 125, стр. 1",
+        "bank_accounts": [
+          {
+            "id": 11,
+            "bank_id": 7,
+            "account_number": "40702811000000789012",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": true,
+            "bank": {
+              "id": 7,
+              "name": "Банк \"ФК Открытие\" (ПАО)",
+              "bik": "044525297",
+              "correspondent_account": "30101810845250000297"
+            }
+          }
+        ],
+        "payment_terms": "Оплата по километражу + простой",
+        "credit_limit": 300000.00,
+        "rating": "average",
+        "notes": "Транспортные услуги, перевозка сельхозпродукции",
+        "is_active": true,
+        "created_at": "2025-04-15T16:20:00.000Z",
+        "updated_at": "2025-05-24T12:35:00.000Z"
+      },
+      {
+        "id": 10,
+        "organization_id": 1,
+        "full_name": "ООО \"Агро-Инвест\"",
+        "short_name": "Агро-Инвест",
+        "inn": "7707890124",
+        "kpp": "770701001",
+        "ogrn": "1167746789012",
+        "counterparty_type": ["customer"],
+        "contact_person": null,
+        "phone": "+7 (495) 890-12-34",
+        "email": "info@agro-invest.ru",
+        "address": "г. Москва, Бульварное кольцо, д. 30, офис 1205",
+        "bank_accounts": [
+          {
+            "id": 12,
+            "bank_id": 8,
+            "account_number": "40702811100000890123",
+            "currency": "RUB",
+            "is_primary": true,
+            "is_active": false,
+            "bank": {
+              "id": 8,
+              "name": "ПАО \"Московский Кредитный Банк\"",
+              "bik": "044525232",
+              "correspondent_account": "30101810745374525232"
+            }
+          }
+        ],
+        "payment_terms": "Предоплата 100%",
+        "credit_limit": 0.00,
+        "rating": "poor",
+        "notes": "ПРИОСТАНОВЛЕНО СОТРУДНИЧЕСТВО - долги по договорам",
+        "is_active": false,
+        "created_at": "2025-05-01T11:10:00.000Z",
+        "updated_at": "2025-05-26T17:45:00.000Z"
+      }
+    ],
+    "total": 10,
+    "page": 1,
+    "limit": 50,
+    "pages": 1
+  },
+  "message": "Найдено 10 контрагентов"
+}
