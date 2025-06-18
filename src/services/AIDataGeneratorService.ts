@@ -1,5 +1,5 @@
 // src/services/AIDataGeneratorService.ts
-
+import {DEFAULT_API_BASE_URL} from '../dataSync/index';
 export interface AIGeneratorOptions {
   apiBaseUrl?: string;
   onStatusChange?: (status: string) => void;
@@ -25,7 +25,7 @@ export class AIDataGeneratorService {
   private onError?: (error: string) => void;
 
   constructor(options: AIGeneratorOptions = {}) {
-    this.apiBaseUrl = options.apiBaseUrl || 'http://localhost:3000';
+    this.apiBaseUrl = options.apiBaseUrl || DEFAULT_API_BASE_URL;
     this.onStatusChange = options.onStatusChange;
     this.onError = options.onError;
   }

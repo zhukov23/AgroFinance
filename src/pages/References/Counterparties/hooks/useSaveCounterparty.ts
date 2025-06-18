@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { CounterpartyData, BankAccountData } from './useCounterpartyEdit';
 import { UniversalSaveService } from '../../../../services/UniversalSaveService';
 import { counterpartySaveDependencies } from '../config/syncConfig';
-
+import {DEFAULT_API_BASE_URL} from '../../../../dataSync/index';
 export interface UseSaveCounterpartyReturn {
   isSaving: boolean;
   saveChanges: (counterparty: CounterpartyData, bankAccounts: BankAccountData[]) => Promise<boolean>;
@@ -14,7 +14,7 @@ export const useSaveCounterparty = (): UseSaveCounterpartyReturn => {
   const [isSaving, setIsSaving] = useState(false);
   
   const saveService = new UniversalSaveService({
-    apiBaseUrl: 'http://localhost:3000',
+    apiBaseUrl: DEFAULT_API_BASE_URL,
     validateSchema: true,
     validateDependencies: true,
     stopOnError: true

@@ -1,12 +1,12 @@
 import { SyncManager } from '../core/syncManager';
 import { clearDatabase } from '../core/dbClient';
 import { SyncStatus, SyncResult, TableSyncResult, SyncEventCallback } from './syncTypes';
-
+const DEFAULT_API_BASE_URL = 'http://89.169.160.162:3000'
 export class SyncUtils {
   private syncManager: SyncManager | null = null;
   private eventCallback?: SyncEventCallback;
 
-  constructor(private tables: string[], private apiBaseUrl: string = 'http://localhost:3000') {}
+  constructor(private tables: string[], private apiBaseUrl: string = DEFAULT_API_BASE_URL) {}
 
   // Устанавливаем callback для событий синхронизации
   setEventCallback(callback: SyncEventCallback) {
@@ -295,5 +295,39 @@ async initialize(): Promise<boolean> {
       version: localStorage.getItem(`version_${tableName}`),
       lastSync: localStorage.getItem(`lastSync_${tableName}`)
     };
+  }
+  // Получение данных таблицы с выбранными полями
+  async getTableDataFields(tableName: string, fields: string[]): Promise<{table: string, fields: string[], data: any[]}> {
+    if (!this.syncManager) {
+      throw new Error('SyncManager не инициализирован');
+    }
+    
+    try {
+      const allData = await this.syncManager.getTableData(tableName);
+      
+      // Фильтруем только нужные поля
+      const filteredData = allData.map(record => {
+        const filteredRecord: any = {};
+        fields.forEach(field => {
+          if (record.hasOwnProperty(field)) {
+            filteredRecord[field] = record[field];
+          }
+        });
+        return filteredRecord;
+      });
+      
+      return {
+        table: tableName,
+        fields: fields,
+        data: filteredData
+      };
+    } catch (error) {
+      console.error(`Ошибка получения данных таблицы ${tableName}:`, error);
+      return {
+        table: tableName,
+        fields: fields,
+        data: []
+      };
+    }
   }
 }

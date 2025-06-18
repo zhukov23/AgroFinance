@@ -586,7 +586,22 @@ const Navdata = () => {
             label: "Банки",
             link: "/references/banks",
             parentId: "references",
+        },
+        {
+            id: "banks",
+            label: "Посевной материал",
+            link: "/references/planting-materials",
+            parentId: "references",
+        },
+        {
+            id: "banks",
+            label: "Пестициды",
+            link: "/references/pesticides",
+            parentId: "references",
         }
+
+
+
     ],
 },
         {
@@ -603,12 +618,24 @@ const Navdata = () => {
             stateVariables: isAuth,
             subItems: [
                 {
+                    id: "fields",
+                    label: "Техника",
+                    link: "/assets/fields",
+                    parentId: "assets"
+                },
+
+                {
                     id: "equipment",
                     label: "Техника",
                     link: "/assets/equipment",
                     parentId: "assets"
                 },
-
+                {
+                    id: "harvested_products",
+                    label: "Собранные урожаи",
+                    link: "/inventory/harvested-products",
+                    parentId: "assets"
+                },
             ],
         },
         {

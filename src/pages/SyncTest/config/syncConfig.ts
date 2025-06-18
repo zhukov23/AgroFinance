@@ -1,5 +1,5 @@
 import { SyncConfig } from '../../../dataSync/utils/syncTypes';
-
+import {DEFAULT_API_BASE_URL} from '../../../dataSync/index';
 // Конфигурация синхронизации для справочника техники
 export const equipmentSyncConfig: SyncConfig = {
   tables: [
@@ -10,7 +10,7 @@ export const equipmentSyncConfig: SyncConfig = {
   ],
   displayName: 'Справочник техники',
   description: 'Синхронизация данных о технике, типах техники, типах почв и их связях',
-  apiBaseUrl: 'http://localhost:3000'
+  apiBaseUrl: DEFAULT_API_BASE_URL
 };
 
 // Настройки автосинхронизации

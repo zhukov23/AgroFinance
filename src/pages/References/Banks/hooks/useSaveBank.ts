@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BankData } from './useBankEdit';
 import { UniversalSaveService } from '../../../../services/UniversalSaveService';
 import { bankSaveDependencies } from '../config/syncConfig';
-
+import {DEFAULT_API_BASE_URL} from '../../../../dataSync/index';
 export interface UseSaveBankReturn {
   isSaving: boolean;
   saveChanges: (bank: BankData) => Promise<boolean>;
@@ -14,7 +14,7 @@ export const useSaveBank = (): UseSaveBankReturn => {
   const [isSaving, setIsSaving] = useState(false);
   
   const saveService = new UniversalSaveService({
-    apiBaseUrl: 'http://localhost:3000',
+    apiBaseUrl: DEFAULT_API_BASE_URL,
     validateSchema: true,
     validateDependencies: true,
     stopOnError: true

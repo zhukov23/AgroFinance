@@ -30,7 +30,7 @@ export { SyncStatusEnum } from './utils/syncTypes';
 export { useSyncData } from '../hooks/useSyncData';
 
 // Константы по умолчанию
-export const DEFAULT_API_BASE_URL = 'http://localhost:3000';
+export const DEFAULT_API_BASE_URL = 'http://89.169.160.162:3000';
 export const DEFAULT_SYNC_INTERVAL_MINUTES = 30;
 export const DEFAULT_DATA_FRESHNESS_MINUTES = 30;
 

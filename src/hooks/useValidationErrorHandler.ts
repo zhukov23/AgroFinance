@@ -17,13 +17,17 @@ export interface UseValidationErrorHandlerReturn {
   
   // Метод для обработки ошибок сохранения
   handleSaveError: (error: any) => void;
+  
+  // Метод для обработки успеха (всегда доступен)
   handleSuccess: (message: string, details?: string) => void;
 }
 
 export const useValidationErrorHandler = (): UseValidationErrorHandlerReturn => {
+  
   const [localError, setLocalError] = useState<string | null>(null);
   const [saveErrorData, setSaveErrorData] = useState<SaveErrorData | null>(null);
   const { showSuccess } = useSuccessToast();
+  
   const clearError = useCallback(() => {
     setLocalError(null);
   }, []);
@@ -36,6 +40,7 @@ export const useValidationErrorHandler = (): UseValidationErrorHandlerReturn => 
     setLocalError(null);
     setSaveErrorData(null);
   }, []);
+
   const handleSuccess = useCallback((message: string, details?: string) => {
     // Очищаем ошибки при успехе
     clearAllErrors();
@@ -43,23 +48,23 @@ export const useValidationErrorHandler = (): UseValidationErrorHandlerReturn => 
     showSuccess(message, details);
   }, [showSuccess, clearAllErrors]);
 
-const handleSaveError = useCallback((error: any) => {
-  console.error('❌ handleSaveError вызван с:', error);
-  console.log('🔍 Тип ошибки:', typeof error, error);
-  console.log('🔍 error.type:', error?.type);
-  console.log('🔍 error.validationErrors:', error?.validationErrors);
+  const handleSaveError = useCallback((error: any) => {
+    console.error('❌ handleSaveError вызван с:', error);
+    console.log('🔍 Тип ошибки:', typeof error, error);
+    console.log('🔍 error.type:', error?.type);
+    console.log('🔍 error.validationErrors:', error?.validationErrors);
 
-  if (error && error.type === 'validation' && error.validationErrors) {
-    console.log('📋 ✅ УСЛОВИЕ ВЫПОЛНЕНО: Найдены ошибки валидации');
-    console.log('📋 Устанавливаем saveErrorData:', error.validationErrors);
-    setSaveErrorData(error.validationErrors);
-    setLocalError(null);
-  } else {
-    console.log('🔍 ❌ УСЛОВИЕ НЕ ВЫПОЛНЕНО: Устанавливаем локальную ошибку');
-    setLocalError(error instanceof Error ? error.message : String(error));
-    setSaveErrorData(null);
-  }
-}, []);
+    if (error && error.type === 'validation' && error.validationErrors) {
+      console.log('📋 ✅ УСЛОВИЕ ВЫПОЛНЕНО: Найдены ошибки валидации');
+      console.log('📋 Устанавливаем saveErrorData:', error.validationErrors);
+      setSaveErrorData(error.validationErrors);
+      setLocalError(null);
+    } else {
+      console.log('🔍 ❌ УСЛОВИЕ НЕ ВЫПОЛНЕНО: Устанавливаем локальную ошибку');
+      setLocalError(error instanceof Error ? error.message : String(error));
+      setSaveErrorData(null);
+    }
+  }, []);
 
   return {
     // Состояние ошибок
@@ -72,8 +77,11 @@ const handleSaveError = useCallback((error: any) => {
     clearError,
     clearSaveError,
     clearAllErrors,
-    handleSuccess,
+    
     // Обработчик ошибок сохранения
-    handleSaveError
+    handleSaveError,
+    
+    // Обработчик успеха (всегда доступен)
+    handleSuccess
   };
 };

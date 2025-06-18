@@ -3,7 +3,7 @@
 import { BatchSaveRequest, BatchSaveResponse, BatchOperation } from '../types/api.types';
 import { BaseEntity, RelatedEntity } from '../types/entity.types';
 import { prepareDataForServer, generateTempId, isTempId } from '../utils/dataTransformation.utils';
-
+import {DEFAULT_API_BASE_URL} from '../dataSync/index';
 export interface SaveServiceOptions {
   apiBaseUrl?: string;
   validateSchema?: boolean;
@@ -19,7 +19,7 @@ export class UniversalSaveService {
   private defaultOptions: Required<SaveServiceOptions>;
 
   constructor(options: SaveServiceOptions = {}) {
-    this.apiBaseUrl = options.apiBaseUrl || 'http://localhost:3000';
+    this.apiBaseUrl = options.apiBaseUrl || DEFAULT_API_BASE_URL;
     this.defaultOptions = {
       apiBaseUrl: this.apiBaseUrl,
       validateSchema: true,

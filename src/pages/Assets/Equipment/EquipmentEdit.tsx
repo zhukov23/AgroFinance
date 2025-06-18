@@ -1,740 +1,382 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Card, CardBody, CardHeader, Col, Container, Form, Input, Label, Nav, NavItem, NavLink, Row, TabContent, TabPane } from 'reactstrap';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Card, CardBody, CardHeader, Col, Container, Row, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import classnames from "classnames";
-import { useSoilTypes} from './hooks/useSoilTypes';
-import { useEquipmentTypes } from './hooks/useEquipmentTypes';
- 
-
-//import images
-import avatar1 from '../../../assets/images/users/avatar-1.jpg';
+import { ErrorToast } from '../../../components/Common/MessageToast/ErrorToast';
+import { SuccessToast } from '../../../components/Common/MessageToast/SuccessToast';
+import { EntityEditActions } from '../../../components/Common/DataManagement/EntityEditActions';
+import { useEquipmentEdit } from './hooks/useEquipmentEdit';
+import BasicInfoTab from './components/BasicInfoTab';
+import RequisitesTab from './components/RequisitesTab';
+import AdditionalTab from './components/AdditionalTab';
 
 const EquipmentEdit = () => {
-    document.title = "Profile Settings | Velzon - React Admin & Dashboard Template";
-
+    const { id } = useParams<{ id: string }>();
+    const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState("1");
-    const { equipmentTypes, loading } = useEquipmentTypes();
-    const { soilTypes, loading: loadingSoilTypes } = useSoilTypes();
+    
+    const equipmentId = id === 'new' ? undefined : (id ? parseInt(id) : undefined);
+    const isNewEquipment = id === 'new';
+    
+    const {
+        equipment,
+        isLoading,
+        hasChanges,
+        error,
+        isSaving,
+        isGenerating,
+        updateEquipment,
+        saveChanges,
+        resetEquipment,
+        generateTestData,
+        clearError,
+        saveErrorData,
+        clearSaveError,
+        handleSuccess
+    } = useEquipmentEdit(equipmentId);
 
+    // Состояние валидации для всех табов
+    const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+    const [tabsWithErrors, setTabsWithErrors] = useState<{[key: string]: boolean}>({});
 
-    const tabChange = (tab: any) => {
+    useEffect(() => {
+        console.log('🔍 saveErrorData изменилось:', saveErrorData);
+    }, [saveErrorData]);
+
+    document.title = isNewEquipment 
+        ? "Новая техника | Агро ПО"
+        : `Редактирование: ${equipment?.name || 'Техника'} | Агро ПО`;
+
+    const tabChange = (tab: string) => {
         if (activeTab !== tab) setActiveTab(tab);
     };
+
+    const [successToast, setSuccessToast] = useState<{
+        message: string;
+        details?: string;
+        isVisible: boolean;
+    } | null>(null);
+
+    // Валидация всех полей
+    const validateAllFields = () => {
+        const errors: {[key: string]: string} = {};
+        const tabErrors: {[key: string]: boolean} = {};
+
+        if (!equipment) {
+            errors.general = 'Нет данных для валидации';
+            return { errors, tabErrors };
+        }
+
+        // Валидация обязательных полей (Таб 1 - Основная информация)
+        if (!equipment.name?.trim()) {
+            errors.name = 'Наименование техники обязательно';
+            tabErrors['1'] = true;
+        }
+
+        if (!equipment.category) {
+            errors.category = 'Категория техники обязательна';
+            tabErrors['1'] = true;
+        }
+
+        // Валидация числовых полей (Таб 2 - Характеристики)
+        if (equipment.engine_power !== undefined && equipment.engine_power !== null) {
+            if (equipment.engine_power < 0 || equipment.engine_power > 9999.99) {
+                errors.engine_power = 'Мощность двигателя должна быть от 0 до 9999.99 л.с.';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.fuel_consumption !== undefined && equipment.fuel_consumption !== null) {
+            if (equipment.fuel_consumption < 0 || equipment.fuel_consumption > 9999.99) {
+                errors.fuel_consumption = 'Расход топлива должен быть от 0 до 9999.99 л/ч';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.working_width !== undefined && equipment.working_width !== null) {
+            if (equipment.working_width < 0 || equipment.working_width > 9999.99) {
+                errors.working_width = 'Рабочая ширина должна быть от 0 до 9999.99 м';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.working_speed_min !== undefined && equipment.working_speed_max !== undefined &&
+            equipment.working_speed_min !== null && equipment.working_speed_max !== null) {
+            if (equipment.working_speed_min > equipment.working_speed_max) {
+                errors.working_speed = 'Минимальная скорость не может быть больше максимальной';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.capacity !== undefined && equipment.capacity !== null) {
+            if (equipment.capacity < 0 || equipment.capacity > 99999999.99) {
+                errors.capacity = 'Производительность должна быть от 0 до 99999999.99 га/ч';
+                tabErrors['2'] = true;
+            }
+        }
+
+        // Валидация размеров
+        if (equipment.length_mm !== undefined && equipment.length_mm !== null) {
+            if (equipment.length_mm < 1 || equipment.length_mm > 99999999) {
+                errors.length_mm = 'Длина должна быть от 1 до 99999999 мм';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.weight_kg !== undefined && equipment.weight_kg !== null) {
+            if (equipment.weight_kg < 1 || equipment.weight_kg > 99999999) {
+                errors.weight_kg = 'Вес должен быть от 1 до 99999999 кг';
+                tabErrors['2'] = true;
+            }
+        }
+
+        // Валидация экономических показателей
+        if (equipment.purchase_price !== undefined && equipment.purchase_price !== null) {
+            if (equipment.purchase_price < 0) {
+                errors.purchase_price = 'Цена покупки не может быть отрицательной';
+                tabErrors['2'] = true;
+            }
+        }
+
+        if (equipment.depreciation_period_years !== undefined && equipment.depreciation_period_years !== null) {
+            if (equipment.depreciation_period_years < 1 || equipment.depreciation_period_years > 50) {
+                errors.depreciation_period_years = 'Срок амортизации должен быть от 1 до 50 лет';
+                tabErrors['2'] = true;
+            }
+        }
+
+        return { errors, tabErrors };
+    };
+
+    const handleSave = async () => {
+        console.log('🔄 handleSave вызван');
+        
+        // Проводим валидацию перед сохранением
+        const { errors, tabErrors } = validateAllFields();
+        setValidationErrors(errors);
+        setTabsWithErrors(tabErrors);
+
+        if (Object.keys(errors).length > 0) {
+            // Если есть ошибки валидации, показываем их
+            const errorMessages = Object.entries(errors).map(([field, message]) => message);
+            const tabsWithErrorsList = Object.keys(tabErrors).map(tabId => {
+                const tabNames: {[key: string]: string} = {
+                    '1': 'Основная информация',
+                    '2': 'Характеристики',
+                    '3': 'Дополнительная информация'
+                };
+                return tabNames[tabId] || `Таб ${tabId}`;
+            });
+
+            console.log('❌ Ошибки валидации:', errors);
+            setSuccessToast({
+                message: 'Ошибки валидации',
+                details: `Проверьте данные на вкладках: ${tabsWithErrorsList.join(', ')}. ${errorMessages.join('. ')}`,
+                isVisible: true
+            });
+            return;
+        }
+
+        try {
+            console.log('📤 Вызываем saveChanges...');
+            const success = await saveChanges();
+            
+            if (success) {
+                console.log('🎉 Техника успешно сохранена!');
+                // Очищаем ошибки валидации при успешном сохранении
+                setValidationErrors({});
+                setTabsWithErrors({});
+                // Показываем успешное уведомление
+                setSuccessToast({
+                    message: 'Техника сохранена',
+                    details: 'Данные техники успешно сохранены',
+                    isVisible: true
+                });
+            } else {
+                console.log('❌ Сохранение не удалось');
+            }
+        } catch (error) {
+            console.error('💥 Ошибка в handleSave:', error);
+        }
+    };
+
+    const handleCancel = () => {
+        if (hasChanges) {
+            if (window.confirm('У вас есть несохраненные изменения. Вы уверены, что хотите выйти?')) {
+                navigate('/assets/equipment');
+            }
+        } else {
+            navigate('/assets/equipment');
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="page-content">
+                <Container fluid>
+                    <div className="text-center p-5">
+                        <div className="spinner-border text-primary" role="status">
+                            <span className="visually-hidden">Загрузка...</span>
+                        </div>
+                        <p className="mt-2">Загрузка данных техники...</p>
+                    </div>
+                </Container>
+                
+                <ErrorToast 
+                    errorData={saveErrorData} 
+                    onClose={clearSaveError} 
+                />
+            </div>
+        );
+    }
 
     return (
         <React.Fragment>
             <div className="page-content">
                 <Container fluid>
+                    {/* Хлебные крошки и заголовок */}
                     <Row>
-                        <Col xxl={3}>
-                            <Card>
-                                <CardBody className="p-4">
-                                    <div className="text-center">
-                                        <div className="profile-user position-relative d-inline-block mx-auto  mb-4">
-                                            <img src={avatar1}
-                                                className="rounded-circle avatar-xl img-thumbnail user-profile-image"
-                                                alt="user-profile" />
-                                            <div className="avatar-xs p-0 rounded-circle profile-photo-edit">
-                                                <Input id="profile-img-file-input" type="file"
-                                                    className="profile-img-file-input" />
-                                                <Label htmlFor="profile-img-file-input"
-                                                    className="profile-photo-edit avatar-xs">
-                                                    <span className="avatar-title rounded-circle bg-light text-body">
-                                                        <i className="ri-camera-fill"></i>
-                                                    </span>
-                                                </Label>
-                                            </div>
-                                        </div>
-                                        <h5 className="fs-17 mb-1">Anna Adame</h5>
-                                        <p className="text-muted mb-0">Lead Designer / Developer</p>
-                                    </div>
-                                </CardBody>
-                            </Card>
-
-                            <Card>
-                                <CardBody>
-                                    <div className="d-flex align-items-center mb-5">
-                                        <div className="flex-grow-1">
-                                            <h5 className="card-title mb-0">Complete Your Profile</h5>
-                                        </div>
-                                        <div className="flex-shrink-0">
-                                            <Link to="#" className="badge bg-light text-primary fs-12"><i
-                                                className="ri-edit-box-line align-bottom me-1"></i> Edit</Link>
-                                        </div>
-                                    </div>
-                                    <div className="progress animated-progress custom-progress progress-label">
-                                        <div className="progress-bar bg-danger" role="progressbar" style={{ "width": "30%" }}>
-                                            <div className="label">30%</div>
-                                        </div>
-                                    </div>
-                                </CardBody>
-                            </Card>
-                            <Card>
-                                <CardBody>
-                                    <div className="d-flex align-items-center mb-4">
-                                        <div className="flex-grow-1">
-                                            <h5 className="card-title mb-0">Portfolio</h5>
-                                        </div>
-                                        <div className="flex-shrink-0">
-                                            <Link to="#" className="badge bg-light text-primary fs-12"><i
-                                                className="ri-add-fill align-bottom me-1"></i> Add</Link>
-                                        </div>
-                                    </div>
-                                    <div className="mb-3 d-flex">
-                                        <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                            <span className="avatar-title rounded-circle fs-16 bg-body text-body">
-                                                <i className="ri-github-fill"></i>
-                                            </span>
-                                        </div>
-                                        <Input type="email" className="form-control" id="gitUsername" placeholder="Username"
-                                            defaultValue="@daveadame" />
-                                    </div>
-                                    <div className="mb-3 d-flex">
-                                        <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                            <span className="avatar-title rounded-circle fs-16 bg-primary">
-                                                <i className="ri-global-fill"></i>
-                                            </span>
-                                        </div>
-                                        <Input type="text" className="form-control" id="websiteInput"
-                                            placeholder="www.example.com" defaultValue="www.velzon.com" />
-                                    </div>
-                                    <div className="mb-3 d-flex">
-                                        <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                            <span className="avatar-title rounded-circle fs-16 bg-success">
-                                                <i className="ri-dribbble-fill"></i>
-                                            </span>
-                                        </div>
-                                        <Input type="text" className="form-control" id="dribbleName" placeholder="Username"
-                                            defaultValue="@dave_adame" />
-                                    </div>
-                                    <div className="d-flex">
-                                        <div className="avatar-xs d-block flex-shrink-0 me-3">
-                                            <span className="avatar-title rounded-circle fs-16 bg-danger">
-                                                <i className="ri-pinterest-fill"></i>
-                                            </span>
-                                        </div>
-                                        <Input type="text" className="form-control" id="pinterestName"
-                                            placeholder="Username" defaultValue="Advance Dave" />
-                                    </div>
-                                </CardBody>
-                            </Card>
+                        <Col>
+                            <div className="page-title-box d-sm-flex align-items-center justify-content-between">
+                                <h4 className="mb-sm-0">
+                                    {isNewEquipment ? 'Новая техника' : 'Редактирование техники'}
+                                </h4>
+                                <div className="page-title-right">
+                                    <ol className="breadcrumb m-0">
+                                        <li className="breadcrumb-item">
+                                            <a href="#" onClick={() => navigate('/assets/equipment')}>
+                                                Техника
+                                            </a>
+                                        </li>
+                                        <li className="breadcrumb-item active">
+                                            {isNewEquipment ? 'Создание' : 'Редактирование'}
+                                        </li>
+                                    </ol>
+                                </div>
+                            </div>
                         </Col>
+                    </Row>
 
-                        <Col xxl={9}>
+                    {/* Ошибки */}
+                    {error && (
+                        <Row>
+                            <Col>
+                                <div className="alert alert-danger d-flex align-items-center" role="alert">
+                                    <i className="ri-error-warning-line me-2"></i>
+                                    <div>
+                                        <strong>Ошибка:</strong> {error}
+                                        <button className="btn btn-sm btn-outline-danger ms-2" onClick={clearError}>
+                                            Закрыть
+                                        </button>
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                    )}
+
+                    <Row>
+                        <Col>
                             <Card>
                                 <CardHeader>
-                                    <Nav className="nav-tabs-custom rounded card-header-tabs border-bottom-0"
-                                        role="tablist">
+                                    <Nav className="nav-tabs-custom rounded card-header-tabs border-bottom-0" role="tablist">
                                         <NavItem>
                                             <NavLink
-                                                className={classnames({ active: activeTab === "1" })}
-                                                onClick={() => {
-                                                    tabChange("1");
-                                                }}>
-                                                <i className="fas fa-home"></i>
-                                                Основные данные
+                                                className={classnames({ 
+                                                    active: activeTab === "1",
+                                                    'text-danger': tabsWithErrors['1']
+                                                })}
+                                                onClick={() => tabChange("1")}>
+                                                <i className="ri-settings-line"></i>
+                                                Основная информация
+                                                {tabsWithErrors['1'] && <i className="ri-error-warning-line ms-1 text-danger"></i>}
                                             </NavLink>
                                         </NavItem>
                                         <NavItem>
-                                            <NavLink to="#"
-                                                className={classnames({ active: activeTab === "2" })}
-                                                onClick={() => {
-                                                    tabChange("2");
-                                                }}
-                                                type="button">
-                                                <i className="far fa-user"></i>
+                                            <NavLink
+                                                className={classnames({ 
+                                                    active: activeTab === "2",
+                                                    'text-danger': tabsWithErrors['2']
+                                                })}
+                                                onClick={() => tabChange("2")}>
+                                                <i className="ri-tools-line"></i>
                                                 Характеристики
+                                                {tabsWithErrors['2'] && <i className="ri-error-warning-line ms-1 text-danger"></i>}
                                             </NavLink>
                                         </NavItem>
-                                        <NavItem >
-                                            <NavLink to="#"
-                                                className={classnames({ active: activeTab === "3" })}
-                                                onClick={() => {
-                                                    tabChange("3");
-                                                }}
-                                                type="button">
-                                                <i className="far fa-envelope"></i>
+                                        <NavItem>
+                                            <NavLink
+                                                className={classnames({ 
+                                                    active: activeTab === "3",
+                                                    'text-danger': tabsWithErrors['3']
+                                                })}
+                                                onClick={() => tabChange("3")}>
+                                                <i className="ri-star-line"></i>
                                                 Дополнительно
+                                                {tabsWithErrors['3'] && <i className="ri-error-warning-line ms-1 text-danger"></i>}
                                             </NavLink>
                                         </NavItem>
                                     </Nav>
                                 </CardHeader>
+                                
                                 <CardBody className="p-4">
                                     <TabContent activeTab={activeTab}>
                                         <TabPane tabId="1">
-                                            <Form>
-                                                <Row>
-                                                    {/* Наименование */}
-                                                    <Col lg={12}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="nameInput" className="form-label">
-                                                                Наименование оборудования <span className="text-danger">*</span>
-                                                            </Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="nameInput"
-                                                                placeholder="Введите наименование оборудования" 
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Тип оборудования (FK) */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="equipmentTypeSelect" className="form-label">
-                                                                Тип оборудования <span className="text-danger">*</span>
-                                                            </Label>
-                                                                <select className="form-select" id="equipmentTypeSelect" disabled={loading}>
-                                                                <option value="">
-                                                                    {loading ? 'Загрузка типов...' : 'Выберите тип оборудования'}
-                                                                </option>
-                                                                {equipmentTypes.map(type => (
-                                                                    <option key={type.id} value={type.id}>
-                                                                    {type.type_name}
-                                                                    {type.type_code && ` (${type.type_code})`}
-                                                                    </option>
-                                                                ))}
-                                                                </select>
-
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Категория - убираем, берется из типа оборудования */}
-
-                                                    {/* Производитель */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="manufacturerInput" className="form-label">
-                                                                Производитель <span className="text-danger">*</span>
-                                                            </Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="manufacturerInput"
-                                                                placeholder="John Deere, Claas, New Holland и т.д." 
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Модель */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="modelInput" className="form-label">
-                                                                Модель <span className="text-danger">*</span>
-                                                            </Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="modelInput"
-                                                                placeholder="Модель или серия" 
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Год выпуска */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="yearInput" className="form-label">
-                                                                Год выпуска <span className="text-danger">*</span>
-                                                            </Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="yearInput"
-                                                                placeholder="2020"
-                                                                min="1950"
-                                                                max="2030"
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Стоимость покупки */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="purchasePriceInput" className="form-label">
-                                                                Стоимость покупки <span className="text-danger">*</span>
-                                                            </Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="purchasePriceInput"
-                                                                placeholder="1500000"
-                                                                step="0.01"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">Укажите стоимость в рублях</div>
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
+                                            <BasicInfoTab
+                                                equipment={equipment}
+                                                updateEquipment={updateEquipment}
+                                                validationErrors={validationErrors}
+                                            />
                                         </TabPane>
-
                                         <TabPane tabId="2">
-                                            <Form>
-                                                <Row>
-                                                    {/* === ДВИГАТЕЛЬ === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 text-muted">🚗 Двигатель</h6>
-                                                    </Col>
-
-                                                    {/* Мощность двигателя */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="enginePowerInput" className="form-label">Мощность</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="enginePowerInput"
-                                                                placeholder="150"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">л.с.</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Объем двигателя */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="engineVolumeInput" className="form-label">Объем</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="engineVolumeInput"
-                                                                placeholder="4.5"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">литров</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Тип топлива */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="fuelTypeSelect" className="form-label">Тип топлива</Label>
-                                                            <select className="form-select" id="fuelTypeSelect">
-                                                                <option value="">Выберите тип</option>
-                                                                <option value="diesel">⛽ Дизель</option>
-                                                                <option value="gasoline">⛽ Бензин</option>
-                                                                <option value="electric">🔋 Электро</option>
-                                                                <option value="hybrid">🔋⛽ Гибрид</option>
-                                                                <option value="gas">🌿 Газ</option>
-                                                            </select>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Расход топлива */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="fuelConsumptionInput" className="form-label">Расход</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="fuelConsumptionInput"
-                                                                placeholder="12.5"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">л/час</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* === РАБОЧИЕ ПАРАМЕТРЫ === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 mt-4 text-muted">⚙️ Рабочие параметры</h6>
-                                                    </Col>
-
-                                                    {/* Рабочая ширина */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="workingWidthInput" className="form-label">Рабочая ширина</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="workingWidthInput"
-                                                                placeholder="3.2"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">метров</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Минимальная скорость */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="workingSpeedMinInput" className="form-label">Скорость мин.</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="workingSpeedMinInput"
-                                                                placeholder="5"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">км/час</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Максимальная скорость */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="workingSpeedMaxInput" className="form-label">Скорость макс.</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="workingSpeedMaxInput"
-                                                                placeholder="12"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">км/час</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Объем/вместимость */}
-                                                    <Col lg={12}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="capacityInput" className="form-label">Объем/Вместимость</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="capacityInput"
-                                                                placeholder="5000"
-                                                                step="1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">литров (для опрыскивателей, сеялок и т.д.)</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* === ГАБАРИТЫ И ВЕС === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 mt-4 text-muted">📏 Габариты и вес</h6>
-                                                    </Col>
-
-                                                    {/* Длина */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="lengthInput" className="form-label">Длина</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="lengthInput"
-                                                                placeholder="8500"
-                                                                step="1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">мм</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Ширина */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="widthInput" className="form-label">Ширина</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="widthInput"
-                                                                placeholder="2500"
-                                                                step="1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">мм</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Высота */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="heightInput" className="form-label">Высота</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="heightInput"
-                                                                placeholder="3200"
-                                                                step="1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">мм</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Вес */}
-                                                    <Col lg={3}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="weightInput" className="form-label">Вес</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="weightInput"
-                                                                placeholder="4500"
-                                                                step="1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">кг</div>
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
+                                            <RequisitesTab
+                                                equipment={equipment}
+                                                updateEquipment={updateEquipment}
+                                                validationErrors={validationErrors}
+                                            />
                                         </TabPane>
-
                                         <TabPane tabId="3">
-                                            <Form>
-                                                <Row>
-                                                    {/* === ЭКОНОМИЧЕСКИЕ ПАРАМЕТРЫ === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 text-muted">💰 Экономические параметры</h6>
-                                                    </Col>
-
-                                                    {/* Срок амортизации */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="depreciationPeriodInput" className="form-label">Срок амортизации</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="depreciationPeriodInput"
-                                                                placeholder="10"
-                                                                min="1"
-                                                                max="50"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">лет</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Стоимость обслуживания */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="maintenanceCostInput" className="form-label">Стоимость обслуживания</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="maintenanceCostInput"
-                                                                placeholder="500"
-                                                                step="0.01"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">руб/час</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* === АГРОТЕХНИЧЕСКИЕ ПАРАМЕТРЫ === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 mt-4 text-muted">🌾 Агротехнические параметры</h6>
-                                                    </Col>
-
-                                                    {/* Подходящие культуры */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="suitableCropsInput" className="form-label">Подходящие культуры</Label>
-                                                            <Input 
-                                                                type="textarea" 
-                                                                className="form-control" 
-                                                                id="suitableCropsInput"
-                                                                rows={3}
-                                                                placeholder="пшеница, ячмень, рапс, подсолнечник..."
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">Укажите через запятую</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Типы почв */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label className="form-label">Типы почв</Label>
-                                                            <div className="border rounded p-2" style={{maxHeight: '200px', overflowY: 'auto'}}>
-                                                                {loadingSoilTypes ? (
-                                                                    <div className="text-muted">Загрузка типов почв...</div>
-                                                                ) : soilTypes.length === 0 ? (
-                                                                    <div className="text-danger">Типы почв не найдены</div>
-                                                                ) : (
-                                                                    soilTypes.map(soil => (
-                                                                        <div key={soil.id} className="form-check">
-                                                                            <input 
-                                                                                className="form-check-input"
-                                                                                type="checkbox"
-                                                                                id={`soil-${soil.id}`}
-                                                                                // checked={selectedSoilIds.includes(soil.id)} // TODO: добавить состояние
-                                                                                // onChange={handleSoilChange} // TODO: добавить обработчик
-                                                                            />
-                                                                            <label className="form-check-label" htmlFor={`soil-${soil.id}`}>
-                                                                                {soil.soil_name}
-                                                                            </label>
-                                                                        </div>
-                                                                    ))
-                                                                )}
-                                                            </div>
-                                                            <div className="form-text">Выберите подходящие типы почв</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Сезон использования */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="seasonUsageSelect" className="form-label">Сезон использования</Label>
-                                                            <select className="form-select" id="seasonUsageSelect">
-                                                                <option value="">Выберите сезон</option>
-                                                                <option value="spring">🌱 Весна</option>
-                                                                <option value="summer">☀️ Лето</option>
-                                                                <option value="autumn">🍂 Осень</option>
-                                                                <option value="winter">❄️ Зима</option>
-                                                                <option value="year_round">🔄 Круглый год</option>
-                                                                <option value="spring_summer">🌱☀️ Весна-Лето</option>
-                                                                <option value="autumn_winter">🍂❄️ Осень-Зима</option>
-                                                            </select>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Минимальный размер поля */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="minFieldSizeInput" className="form-label">Минимальный размер поля</Label>
-                                                            <Input 
-                                                                type="number" 
-                                                                className="form-control" 
-                                                                id="minFieldSizeInput"
-                                                                placeholder="5"
-                                                                step="0.1"
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">гектаров</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* === ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ === */}
-                                                    <Col lg={12}>
-                                                        <h6 className="mb-3 mt-4 text-muted">📝 Дополнительная информация</h6>
-                                                    </Col>
-
-                                                    {/* Код оборудования */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="equipmentCodeInput" className="form-label">Внутренний код</Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="equipmentCodeInput"
-                                                                placeholder="EQ-001"
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Подкатегория */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="subcategoryInput" className="form-label">Подкатегория</Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="subcategoryInput"
-                                                                placeholder="Универсальный, Специализированный..."
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Страна происхождения */}
-                                                    <Col lg={4}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="countryOriginInput" className="form-label">Страна происхождения</Label>
-                                                            <Input 
-                                                                type="text" 
-                                                                className="form-control" 
-                                                                id="countryOriginInput"
-                                                                placeholder="Германия, США, Россия..."
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Описание */}
-                                                    <Col lg={12}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="descriptionInput" className="form-label">Подробное описание</Label>
-                                                            <Input 
-                                                                type="textarea" 
-                                                                className="form-control" 
-                                                                id="descriptionInput"
-                                                                rows={4}
-                                                                placeholder="Подробное описание оборудования, особенности эксплуатации, рекомендации..."
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Сертификаты */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="certificationsInput" className="form-label">Сертификаты</Label>
-                                                            <Input 
-                                                                type="textarea" 
-                                                                className="form-control" 
-                                                                id="certificationsInput"
-                                                                rows={3}
-                                                                placeholder="CE, ISO 9001, ГОСТ..."
-                                                                defaultValue="" 
-                                                            />
-                                                            <div className="form-text">Укажите через запятую</div>
-                                                        </div>
-                                                    </Col>
-
-                                                    {/* Навесное оборудование */}
-                                                    <Col lg={6}>
-                                                        <div className="mb-3">
-                                                            <Label htmlFor="attachmentsInput" className="form-label">Навесное оборудование</Label>
-                                                            <Input 
-                                                                type="textarea" 
-                                                                className="form-control" 
-                                                                id="attachmentsInput"
-                                                                rows={3}
-                                                                placeholder="Описание возможного навесного оборудования..."
-                                                                defaultValue="" 
-                                                            />
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Form>
-
+                                            <AdditionalTab
+                                                equipment={equipment}
+                                                updateEquipment={updateEquipment}
+                                                validationErrors={validationErrors}
+                                            />
                                         </TabPane>
-
                                     </TabContent>
-                                    {/* Кнопки управления */}
-                                    <Col lg={12}>
-                                        <div className="hstack gap-2 justify-content-end">
-                                            <button type="button" className="btn btn-primary">
-                                                <i className="ri-save-line align-bottom me-1"></i>
-                                                Сохранить
-                                            </button>
-                                            <button type="button" className="btn btn-soft-success">
-                                                <i className="ri-close-line align-bottom me-1"></i>
-                                                Отмена
-                                            </button>
-                                            <button type="button" className="btn btn-soft-info">
-                                                <i className="ri-file-download-line align-bottom me-1"></i>
-                                                Экспорт
-                                            </button>
-                                        </div>
-                                    </Col>
-
+                                    
+                                    {/* Универсальные кнопки управления */}
+                                    <Row>
+                                        <Col lg={12}>
+                                            <EntityEditActions
+                                                onSave={handleSave}
+                                                isSaving={isSaving}
+                                                hasChanges={hasChanges}
+                                                onReset={resetEquipment}
+                                                onGenerateTestData={generateTestData}
+                                                isGenerating={isGenerating}
+                                                onCancel={handleCancel}
+                                                disabled={isLoading}
+                                            />
+                                        </Col>
+                                    </Row>
                                 </CardBody>
                             </Card>
                         </Col>
                     </Row>
                 </Container>
             </div>
+            
+            <ErrorToast 
+                errorData={saveErrorData} 
+                onClose={clearSaveError} 
+            />
+            <SuccessToast 
+                message={successToast?.message || ''}
+                details={successToast?.details}
+                isVisible={successToast?.isVisible || false}
+                onClose={() => setSuccessToast(null)}
+            />
         </React.Fragment>
     );
 };
 
-export default EquipmentEdit;
+export default EquipmentEdit; 

@@ -892,7 +892,7 @@ export const advancedSyncConfig: SyncConfig = {
     'link_product_categories',
     'transactions'
   ],
-  apiBaseUrl: process.env.REACT_APP_API_URL || 'http://localhost:3000',
+  apiBaseUrl: process.env.REACT_APP_API_URL || DEFAULT_API_BASE_URL,
   displayName: 'Система управления товарами',
   description: 'Справочники товаров, категорий, поставщиков и транзакции'
 };
@@ -902,7 +902,7 @@ export const createSyncConfig = (environment: 'development' | 'production'): Syn
   tables: ['users', 'settings', 'data'],
   apiBaseUrl: environment === 'production' 
     ? 'https://api.mycompany.com'
-    : 'http://localhost:3000',
+    : DEFAULT_API_BASE_URL,
   displayName: `Приложение (${environment})`,
   description: `Конфигурация для ${environment} окружения`
 });
@@ -920,7 +920,7 @@ export const createModuleSyncConfig = (
   baseUrl?: string
 ): SyncConfig => ({
   tables,
-  apiBaseUrl: baseUrl || process.env.REACT_APP_API_URL || 'http://localhost:3000',
+  apiBaseUrl: baseUrl || process.env.REACT_APP_API_URL || DEFAULT_API_BASE_URL,
   displayName: `Модуль: ${moduleName}`,
   description: `Синхронизация данных модуля ${moduleName}`
 });
@@ -1343,7 +1343,7 @@ describe('SyncUtils', () => {
 
   beforeEach(() => {
     mockApi = new MockApiClient();
-    syncUtils = new SyncUtils(['users'], 'http://localhost:3000');
+    syncUtils = new SyncUtils(['users'], DEFAULT_API_BASE_URL);
   });
 
   it('должен корректно инициализироваться', async () => {
@@ -1860,7 +1860,7 @@ interface EnvironmentConfig {
 
 const environments: Record<string, EnvironmentConfig> = {
   development: {
-    apiBaseUrl: 'http://localhost:3000',
+    apiBaseUrl: DEFAULT_API_BASE_URL,
     syncInterval: 5, // частая синхронизация для разработки
     retryAttempts: 3,
     debugMode: true,

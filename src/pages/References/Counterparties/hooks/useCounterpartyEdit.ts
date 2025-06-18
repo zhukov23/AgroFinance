@@ -10,7 +10,7 @@ import { useCounterpartyData } from './useCounterpartyData';
 import { useBankAccountsManager } from './useBankAccountsManager';
 import { useTestDataGeneration, createTestDataConfig } from './useTestDataGeneration';
 import { BankInfo } from '../services/testDataGenerator';
-
+import {DEFAULT_API_BASE_URL} from '../../../../dataSync/index';
 // Алиас для обратной совместимости
 export type CounterpartyData = Counterparty;
 
@@ -83,10 +83,10 @@ export const useCounterpartyEdit = (counterpartyId?: number): UseCounterpartyEdi
   const { 
     localError, 
     saveErrorData, 
-    clearError, 
+    clearError: clearValidationError, // ← Переименовываем для избежания конфликта
     clearSaveError, 
     handleSaveError,
-    handleSuccess  
+    handleSuccess  // ← Этот метод доступен так как useToasts: true по умолчанию
   } = useValidationErrorHandler();
 
   // Управление данными контрагента
@@ -120,7 +120,7 @@ export const useCounterpartyEdit = (counterpartyId?: number): UseCounterpartyEdi
   // Генерация тестовых данных
   const testDataGeneration = useTestDataGeneration(
     createTestDataConfig(
-      counterpartiesSyncConfig.apiBaseUrl || 'http://localhost:3000',
+      counterpartiesSyncConfig.apiBaseUrl || DEFAULT_API_BASE_URL,
       (generatedCounterparty, generatedBankAccounts) => {
         // Применяем сгенерированные данные контрагента
         counterpartyData.updateCounterparty(generatedCounterparty);
@@ -170,6 +170,11 @@ export const useCounterpartyEdit = (counterpartyId?: number): UseCounterpartyEdi
         counterpartyData.setOriginalCounterparty({ ...counterpartyData.counterparty });
         bankManager.setOriginalEntities([...bankManager.bankAccounts]);
         console.log('✅ Контрагент успешно сохранен');
+        
+        // Показываем успешное уведомление
+        if (handleSuccess) {
+          handleSuccess('Контрагент сохранен', 'Данные контрагента и банковские счета успешно обновлены');
+        }
       }
       
       return success;
@@ -177,6 +182,12 @@ export const useCounterpartyEdit = (counterpartyId?: number): UseCounterpartyEdi
       handleSaveError(error);
       return false;
     }
+  };
+
+  // Комбинированная функция очистки ошибок
+  const clearError = () => {
+    clearValidationError(); // ← Используем переименованную функцию
+    counterpartyData.clearError();
   };
 
   return {
@@ -212,10 +223,7 @@ export const useCounterpartyEdit = (counterpartyId?: number): UseCounterpartyEdi
     // Обработка ошибок
     saveErrorData,
     clearSaveError,
-    clearError: () => {
-      clearError();
-      counterpartyData.clearError();
-    },
-    handleSuccess
+    clearError, // ← Теперь это отдельная функция
+    handleSuccess: handleSuccess! // ← Гарантированно доступен так как useToasts: true
   };
 };

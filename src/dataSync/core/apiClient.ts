@@ -1,8 +1,9 @@
+const DEFAULT_API_BASE_URL = 'http://89.169.160.162:3000';
 // Простой API клиент для загрузки данных по таблицам
 export class ApiClient {
   private baseUrl: string;
 
-  constructor(baseUrl = 'http://localhost:3000') {
+  constructor(baseUrl = DEFAULT_API_BASE_URL) {
     this.baseUrl = baseUrl;
   }
 

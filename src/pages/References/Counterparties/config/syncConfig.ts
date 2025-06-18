@@ -1,5 +1,5 @@
 import { SyncConfig } from '../../../../dataSync/utils/syncTypes';
-
+import {DEFAULT_API_BASE_URL} from '../../../../dataSync/index';
 export const counterpartiesSyncConfig: SyncConfig = {
   tables: [
     'link_counterparties_bank_accounts',
@@ -8,7 +8,7 @@ export const counterpartiesSyncConfig: SyncConfig = {
   ],
   displayName: 'Справочник контрагентов',
   description: 'Синхронизация данных о контрагентах компании',
-  apiBaseUrl: 'http://localhost:3000'
+  apiBaseUrl: DEFAULT_API_BASE_URL
 };
 
 // Настройки автосинхронизации

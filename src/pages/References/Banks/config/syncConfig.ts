@@ -1,12 +1,12 @@
 import { SyncConfig } from '../../../../dataSync/utils/syncTypes';
-
+import {DEFAULT_API_BASE_URL} from '../../../../dataSync/index';
 export const banksSyncConfig: SyncConfig = {
   tables: [
     'reference_banks'
   ],
   displayName: 'Справочник банков',
   description: 'Синхронизация данных о банках',
-  apiBaseUrl: 'http://localhost:3000'
+  apiBaseUrl: DEFAULT_API_BASE_URL
 };
 
 // Настройки автосинхронизации
